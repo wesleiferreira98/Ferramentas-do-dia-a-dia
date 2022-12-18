@@ -9,7 +9,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 public class SubnetCalculator extends Application {
   public static void main(String[] args) {
@@ -73,13 +76,20 @@ public class SubnetCalculator extends Application {
           broadcastField.setText(InetAddress.getByAddress(broadcast).getHostAddress());
 
           // Calcular o intervalo de endereços IP possíveis
-          long minIP = InetAddress.getByAddress(network).getAddress();
-          long maxIP = InetAddress.getByAddress(broadcast).getAddress();
-          StringBuilder ipRange = new StringBuilder();
-          for (long i = minIP + 1; i < maxIP; i++) {
-            ipRange.append(InetAddress.getByAddress(BigInteger.valueOf(i).toByteArray()).getHostAddress()).append("\n");
-          }
-          ipRangeField.setText(ipRange.toString());
+         // Calcular o intervalo de endereços IP possíveis
+         ByteBuffer buffer = ByteBuffer.wrap(network);
+         long minIP = buffer.getInt() & 0xFFFFFFFFL;
+         ByteBuffer buffer2 = ByteBuffer.wrap(broadcast);
+         long maxIP = buffer2.getInt() & 0xFFFFFFFFL;
+         StringBuilder ipRange = new StringBuilder();
+         ArrayList<String> ipsValidos = new ArrayList<>();
+         for (long i = minIP + 1; i < maxIP; i++) {
+            System.out.println(InetAddress.getByName(Long.toString(i & 0xFFFFFFFFL)).getHostAddress());
+            ipsValidos.add(InetAddress.getByName(Long.toString(i & 0xFFFFFFFFL)).getHostAddress()+"\n");
+            ipRange.append(InetAddress.getByName(Long.toString(i & 0xFFFFFFFFL)).getHostAddress()).append("\n");
+        }
+
+          ipRangeField.setText(ipsValidos.toString());
         } catch (Exception e) {
           // Exibir uma mensagem de erro se alguma coisa der errado
           e.printStackTrace();
